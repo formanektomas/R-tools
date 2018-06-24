@@ -1,7 +1,7 @@
 # Panel data: lags & within means - a working example
 #
 require(plm)
-library(dplyr)
+require(dplyr)
 #
 #
 # balanced panel
