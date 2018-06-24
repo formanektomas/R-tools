@@ -19,4 +19,4 @@ data("EmplUK", package = "plm")
 #
 EmplUK2 <- EmplUK %>%  
   group_by(firm) %>%
-  mutate(wage_1 = lag(wage), capital_1 = lag(capital), capital_w = mean(capital))
+  mutate(wage_1 = lag(wage), capital_1 = lag(capital), capital_w = mean(capital)) 
