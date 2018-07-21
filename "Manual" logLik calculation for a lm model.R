@@ -17,5 +17,5 @@ sum(dnorm(swiss$Fertility, mean=fitted(lm1), sd=sigma, log=TRUE))
 # alternatively:
 sum(dnorm(resid(lm1), mean=0, sd=sigma, log=TRUE))
 #
-## Amended from
+## Amended from 
 ## https://stats.stackexchange.com/questions/86273/calculate-log-likelihood-by-hand-for-generalized-nonlinear-least-squares-regre
