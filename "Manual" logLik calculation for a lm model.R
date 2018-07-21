@@ -7,7 +7,7 @@ lm1 <- lm(Fertility ~. , data = swiss)
 summary(lm1)
 logLik(lm1)
 #
-# uncorr residuals
+# uncorrelated residuals assumed
 N <- lm1$df.residual + lm1$rank # number of observations used for estimation
 p <- lm1$rank  # number of parameters estimated
 sigma <- sqrt(sum((lm1$residuals)^2)/(N-p)) * sqrt((N-p)/N)
