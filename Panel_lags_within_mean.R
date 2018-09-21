@@ -14,7 +14,7 @@ Cigar2 <- Cigar %>%
 #
 #
 # Non-balanced panel, add 1st lags and within mean
-# .. please note that there is no difference in calclating 
+# .. please note that there is no difference in calculating 
 #    lags and within means for balanced/non-balanced panels
 data("EmplUK", package = "plm")
 ?EmplUK
