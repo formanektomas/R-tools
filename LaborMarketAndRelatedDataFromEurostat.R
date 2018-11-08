@@ -94,7 +94,7 @@ FOREIGN <- FOREIGN[FOREIGN$time >= 2010 & FOREIGN$time <= 2016, ]
 FOREIGN <- FOREIGN[FOREIGN$sex == "T", ]
 # Y15-64 only
 FOREIGN <- FOREIGN[FOREIGN$age == "Y15-64", ]
-# EU expants & non_EU expats
+# EU expats & non_EU expats
 FOREIGN <- FOREIGN[FOREIGN$c_birth == "EU28_FOR" | FOREIGN$c_birth == "NEU28_FOR", ]
 # Tertiary education (levels 5-8), of the ISCED 2011 levels
 FOREIGN <- FOREIGN[FOREIGN$isced11 == "ED5-8", ]
@@ -124,6 +124,8 @@ CAP <- CAP[CAP$time >= 2010 & CAP$time <= 2016, ]
 CAP <- CAP[CAP$currency == "MIO_EUR", ]
 CAP$currency <- NULL
 # Select NACE2 sectors
+# 	B-E	Industry (except construction)
+#   M_N	Professional, scientific and technical activities; administrative and support service activities
 CAP <- CAP[CAP$nace_r2 == "TOTAL" | CAP$nace_r2 == "B-E" | CAP$nace_r2 == "J" | CAP$nace_r2 == "M_N", ]
 # Formatting
 CAP$GCF <- "GCF"
