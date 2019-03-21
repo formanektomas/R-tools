@@ -1,0 +1,44 @@
+library(dplyr)
+library(eurostat)
+library(sf)
+library(spdep)
+library(ggplot2)
+library(RColorBrewer)
+rm(list = ls())
+#
+# Get the spatial data for NUTS regions and cast it as a sp object
+options(readr.default_locale=readr::locale(tz="Europe/Berlin"))
+df60 <- eurostat::get_eurostat_geospatial(resolution = 60)
+#
+#
+# Example of map for UK - NUTS 2
+UK60 <- df60 %>%   
+  dplyr::filter(LEVL_CODE == 2 & CNTR_CODE %in% ("UK")) %>% 
+  dplyr::select(NUTS_ID)
+#
+# ggplot2 map
+ggplot() + 
+  geom_sf(data = UK60)
+#
+# Centroids.... illustrative, just to get some spatial poits.
+# Centroids are calculated
+UK.sp <- as_Spatial(UK60) # properly calculated from {sp} only
+# .. cannot use {sf} package here:  Centroids1 <- st_centroid(U.sf)
+# https://r-spatial.github.io/sf/articles/sf6.html
+Centroids1 <- as.data.frame(coordinates(UK.sp))
+colnames(Centroids1) <- c("lon","lat")
+Centroids1$NUTS_ID <- UK.sp$NUTS_ID
+head(Centroids1)
+Centroids1<- rbind(Centroids1, c(0,52,0))
+Centroids1$NUTS_ID[42] <- "NewPoint"
+row.names(Centroids1) <- Centroids1$NUTS_ID
+#
+# Match spatial points to polygons (NUTS2 regions)
+# .. sp::over() needs same projection schemes in boths "points" and "polygons"
+UK.sp@proj4string
+Centroids2<- SpatialPoints(Centroids1[,1:2], CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+#
+#
+?sp::over
+Matching.points <- sp::over(Centroids2,UK.sp)
+Matching.points
