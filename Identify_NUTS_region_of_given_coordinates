@@ -7,6 +7,7 @@ library(RColorBrewer)
 rm(list = ls())
 #
 # Get the spatial data for NUTS regions and cast it as a sp object
+#
 options(readr.default_locale=readr::locale(tz="Europe/Berlin"))
 df60 <- eurostat::get_eurostat_geospatial(resolution = 60)
 #
@@ -16,7 +17,7 @@ UK60 <- df60 %>%
   dplyr::filter(LEVL_CODE == 2 & CNTR_CODE %in% ("UK")) %>% 
   dplyr::select(NUTS_ID)
 #
-# ggplot2 map
+# ggplot2 map example
 ggplot() + 
   geom_sf(data = UK60)
 #
