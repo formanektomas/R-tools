@@ -27,4 +27,5 @@ plot(grd_lrg)
 plot(nb_rook, coords, col = "red", add = T)
 #
 #
-## adapted from https://gis.stackexchange.com/questions/273233/create-spatial-polygon-grid-from-spatial-points-in-r
+#
+# adapted from https://gis.stackexchange.com/questions/273233/create-spatial-polygon-grid-from-spatial-points-in-r
