@@ -41,6 +41,6 @@ Centroids[Centroids$NUTS_ID=="DE40",2:3] <- c(13.397932, 53) # amend for name ov
 ggplot() + 
   geom_sf(data = Germany60)+
   geom_text(data = Centroids, aes(label = NUTS_ID, x = long, y = lat, group=NUTS_ID), size = 2.5) + 
-  # ggtitle("NUTS2 regions for selected countries: AT, CZ, DE, HU, PL, SK") +
+  # ggtitle("NUTS2 regions in Germany") +
   theme_minimal()
 #
