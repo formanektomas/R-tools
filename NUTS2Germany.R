@@ -4,7 +4,6 @@ library(dplyr)
 library(eurostat)
 library(sf)
 library(ggplot2)
-library(RColorBrewer)
 rm(list = ls())
 #
 #
