@@ -1,0 +1,130 @@
+---
+title: 'Fertility visualisation'
+author: "Eurostat/dplyr/ggplot2 example by Pavel Tomek"
+date: "3/1/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(eurostat)
+library(knitr)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+```
+
++ Visualisation of fertility in Central European countries.  
++ Live births per 1000 women (split into different age groups).    
++ Bulgaria, Croatia, Czechia, Poland, Romania and Slovakia. 
++ Use of `eurostat` and `dplyr` packages/functions.  
+
+
+```{r}
+kable(search_eurostat(".*births.*NUTS", fixed = F))
+```
+
+* "demo_r_fagec3" dataset is chosen for subsequent analysis.
+
+```{r}
+kable(search_eurostat(".*Population.*age.*sex", fixed = F)[15:20,])
+```
+
+* "demo_pjangroup" dataset is chosen for subsequent analysis
+
+#### Dataset demo_r_fagec3
+
+```{r, message = FALSE}
+birth.data <- get_eurostat("demo_r_fagec3", time_format = "num")
+
+birth.labeled <- label_eurostat(birth.data, fix_duplicated = T)
+head(birth.labeled,10)
+```
+
+Show dataset structure for "demo_r_fagec3":
+
+```{r}
+str(birth.data)
+data.frame(unique(birth.labeled$age))
+```
+
+
+#### Dataset "demo_pjangroup"
+
+
+```{r, message = FALSE}
+pop.data <- get_eurostat("demo_pjangroup", time_format = "num")
+
+pop.labeled <- label_eurostat(pop.data, fix_duplicated = T)
+head(pop.labeled,10)
+```
+
+Show dataset structure for "demo_pjangroup"
+
+```{r}
+str(pop.labeled)
+```
+
+* Filter for states of interest, time periods of interest  
+* Regroup into new (convenient) age groups
+* Joint datasets
+* Calculate fertility rates  
+
+```{r, message=FALSE, warning=FALSE}
+pop.pipe <- pop.data %>% 
+  select(-unit) %>% 
+  filter(geo %in% c("BG","CZ","HR","HU","PL","RO")) %>% 
+  filter(age != "TOTAL", age != "UNK", sex == "F", time >= 2013, time <=2018) %>% 
+  filter(age %in% c("Y10-14","Y15-19","Y20-24","Y25-29","Y30-34","Y35-39","Y40-44","Y45-49","Y_GE45","YGE_50")) %>% 
+  mutate(age_group = case_when(age=="Y10-14" | age=="Y15-19" ~ "Y<20",
+                               age=="Y40-44" | age=="Y45-49" | age == "Y_GE50" ~ "Y>40",
+                               age=="Y20-24" ~ "Y20-24",
+                               age=="Y25-29" ~ "Y25-29",
+                               age=="Y30-34" ~ "Y30-34",
+                               age=="Y35-39" ~ "Y35-39"
+  )) %>% 
+  group_by(time,geo,age_group) %>% 
+  mutate(female = sum(values)) %>%
+  ungroup() %>% 
+  filter(age %in% c("Y15-19","Y20-24","Y25-29","Y30-34","Y35-39","Y40-44")) %>% 
+  select(time,geo,age_group,female) %>% 
+  arrange(time,geo)
+
+birth.pipe <- birth.data %>%
+  select(geo,age,time,values) %>%
+  filter(nchar(as.character(geo))==2) %>%
+  filter(geo %in% c("BG","CZ","HR","HU","PL","RO")) %>% 
+  filter(age != "TOTAL", age != "UNK") %>%
+  #arrange(time,geo,age) %>%
+  mutate(age_group = case_when(age=="Y10-14" | age=="Y15-19" ~ "Y<20",
+                               age=="Y40-44" | age=="Y45-49" | age == "Y_GE50" ~ "Y>40",
+                               age=="Y20-24" ~ "Y20-24",
+                               age=="Y25-29" ~ "Y25-29",
+                               age=="Y30-34" ~ "Y30-34",
+                               age=="Y35-39" ~ "Y35-39"
+                               )) %>% 
+  group_by(time,geo,age_group) %>% 
+  mutate(births = sum(values)) %>%
+  ungroup() %>% 
+  filter(age %in% c("Y15-19","Y20-24","Y25-29","Y30-34","Y35-39","Y40-44")) %>% 
+  select(time,geo,age_group,births) %>% 
+  arrange(time,geo) %>% 
+  left_join(pop.pipe,by = c("time","geo","age_group")) %>% 
+  mutate(BirthsPerThsFemPop = births/female*1000)
+
+head(birth.pipe,10)
+```
+
+
+* Plot the data:
+
+
+```{r, message=FALSE, warning=FALSE}
+ggplot(birth.pipe)+
+  geom_line(aes(x = time, y = BirthsPerThsFemPop, color = geo), size = 0.8)+
+  facet_wrap(~age_group, scales = "free", nrow = 3)+
+  ggtitle("Number of births per 1000 females by age in CEE region")+
+  ylab("Births per 1000 females")+
+  xlab("Year")
+```
+
