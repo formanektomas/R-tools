@@ -1,0 +1,49 @@
+library(eurostat)
+library(tidyr)
+library(dplyr)
+# library(EnvStats) geoMean() may be used
+#
+rm(list=ls())
+I1 <- search_eurostat("Harmonised index", fixed=F)
+I2 <- search_eurostat(".*prices", fixed=F)
+#
+I2$title
+#
+Inflation <- get_eurostat("ei_cphi_m", time_format = "num") # note the simplified time format
+dim(Inflation)
+summary(Inflation)
+#
+Inflation.l <- label_eurostat(Inflation, fix_duplicated = T)
+#
+# data info
+cbind(as.character(unique(Inflation$unit)),as.character(unique(Inflation.l$unit)))
+cbind(as.character(unique(Inflation$indic)),as.character(unique(Inflation.l$indic)))
+#
+summary(Inflation)
+#
+# Check 2015 = 100
+Inflation %>% 
+  filter(unit=="HICP2015",indic=="CP-HI00",geo=="CZ", time>=2015,time<2016) %>% 
+  mutate(avgCheck = mean(values))
+#
+#
+#
+# annual HICP for selected countries:
+InfData <- Inflation %>% 
+  filter(unit=="HICP2015",indic=="CP-HI00") %>% # select indicators
+  filter(geo %in% c("AT","DE","BE","NL","HU","SK","PL","LU","SI","CZ")) %>% # countries
+  mutate(year = floor(time)) %>% # round-down, i.e. year info only
+  group_by(geo,year) %>% # grouped in two levels (nested)
+  summarize(HICP = mean(values, na.rm = TRUE)) %>% 
+  ungroup()
+#
+#
+#
+write.csv(InfData,"HICP_annual.csv",row.names = F)
+
+
+
+
+
+
+
