@@ -14,3 +14,4 @@ kronecker(J4,I3) # each element of J4 multiplied by I3 and stacked
 J4a <- matrix(1:16, nrow=4)
 J4a # 1 to 16 elements filled column-wise
 kronecker(J4a,I3)
+kronecker(I3,J4a)
