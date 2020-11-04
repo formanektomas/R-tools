@@ -1,6 +1,8 @@
 rm(list=ls())
-require("SmarterPoland") # install.packages("SmarterPoland")
-require("reshape")
+# install.packages("SmarterPoland")
+# install.packages("reshape")
+library("SmarterPoland") 
+library("reshape")
 help(package=SmarterPoland)
 #
 #
