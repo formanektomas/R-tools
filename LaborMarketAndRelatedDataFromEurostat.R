@@ -72,8 +72,8 @@ ACTIVES$unit <- NULL
 # Select Age: 15-64 & 65+
 ACTIVES <- ACTIVES[ACTIVES$age == "Y15-64" | ACTIVES$age == "Y_GE65", ]
 ACTIVES$Act <- "Act" # Make var-name understandable
-rm(ACTIVES)
 ActDF <- cast(ACTIVES, geo+time ~ Act+sex+age)
+rm(ACTIVES)
 #
 MainDF <- merge(MainDF, ActDF, by.x = c("geo", "time"), by.y = c("geo", "time"), all.x = TRUE)
 colnames(MainDF) <- c("geo","time","EUR_HAB","EUR_HAB_EU","MIO_EUR","FemPopNr","TotPopNr",
