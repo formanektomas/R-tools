@@ -1,3 +1,6 @@
+# not based on the {eurostat} package - can be used
+# in situations when {eurostat} is pulled from CRAN
+# 
 rm(list=ls())
 # install.packages("SmarterPoland")
 # install.packages("reshape")
