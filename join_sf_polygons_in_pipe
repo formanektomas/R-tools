@@ -1,0 +1,34 @@
+#
+library(sf)
+download.file("https://biogeo.ucdavis.edu/data/gadm3.6/Rsf/gadm36_MLT_2_sf.rds",
+              "gadm36_MLT_2_sf.rds")
+#
+malta <- readRDS("gadm36_MLT_2_sf.rds")
+#
+plot(malta[,1])
+dim(malta)
+#
+# 68 regions .... 
+library(ggplot2)
+#
+# example
+ggplot()+
+  geom_sf(data=malta, aes(fill=GID_2))
+#
+ggplot()+
+  geom_sf(data=malta, aes(fill=GID_1))
+# MLT.2_1 is one electoral district as of 2013, so I base my example on this "District 13"
+#
+malta$District <- "Other" # set new variable for electoral districts
+malta[malta$GID_1=="MLT.2_1","District"] <-"D_13" # MLT.2_1 is Distr. 13
+#
+# dplyr::summarize() can be used to join selected sf geometries within the pipe operator
+library(dplyr)
+malta_Distr <- malta %>% 
+  group_by(District) %>% # in this example, there are 2 groups: "D_13" and "Other"
+  dplyr::summarise() %>% # dplyr::summarize() combines the geometries, like st_union()
+  ungroup()
+#
+ggplot()+
+  geom_sf(data=malta_Distr, aes(fill=District))
+#
