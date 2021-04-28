@@ -1,0 +1,7 @@
+# Example for a lower triangular matrix, with zeros above main diagonal
+A <- matrix(1:25, ncol=5)
+A
+B <- matrix(rep(0,25),ncol=5)
+B
+B[lower.tri(B, diag = T)] <- A[lower.tri(A, diag = T)]
+B
