@@ -1,0 +1,52 @@
+# Retrieve basic energy-related data from Eurostat
+# .. sample script for data download and basic manipulations
+library(eurostat)
+library(knitr)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(RColorBrewer)
+library(zoo)
+#------------------
+toc <- get_eurostat_toc() # Downloads Table of Contents of Eurostat Data Sets
+#
+Energy_Data <- toc[grep(".*energy", toc$title, ignore.case = T),]
+Energy_Data <- Energy_Data %>%
+  filter(type != "folder")
+#
+View(Energy_Data)
+# Zajimavy by mohl byt vliv promennych jako jsou
+# Energy efficiency nrg_ind_eff
+# Share of energy from renewable sources nrg_ind_ren
+# etc.
+#
+#------------------
+Inflation <- get_eurostat("ei_cphi_m") # note the simplified time format
+Inflation.l <- label_eurostat(Inflation, fix_duplicated = T)
+cbind(as.character(unique(Inflation$unit)),as.character(unique(Inflation.l$unit)))
+cbind(as.character(unique(Inflation$indic)),as.character(unique(Inflation.l$indic)))
+# "CP-HIE"      "HICP - Energy"
+# Energy consumer price index, 2015=100
+Energy_inflation <- Inflation %>% 
+  filter(unit == "HICP2015", indic == "CP-HIE",s_adj == "NSA", geo == "CZ") %>% 
+  select(time,values) %>% 
+  arrange(time) %>% 
+  read.zoo()
+autoplot(Energy_inflation)
+#
+#------------------
+Electricity <- toc[grep(".*electr", toc$title, ignore.case = T),]
+Electricity <- Electricity %>%
+  filter(type != "folder")
+#
+View(Electricity)
+# Electricity prices components for household consumers - annual data (from 2007 onwards)
+# nrg_pc_204_c
+#
+# 
+El_components <- get_eurostat("nrg_pc_204_c", time_format = "raw") # note the simplified time format
+El_components.l <- label_eurostat(El_components, fix_duplicated = T)
+cbind(as.character(unique(El_components$nrg_cons)),as.character(unique(El_components.l$nrg_cons)))
+cbind(as.character(unique(El_components$nrg_prc)),as.character(unique(El_components.l$nrg_prc)))
+#
+#
