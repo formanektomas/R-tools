@@ -47,10 +47,17 @@ ggplot() +
   geom_sf(data=map2, fill = '#CCCCCC', color = 'darkgrey') +
   geom_sf(data=my_states, fill="#999999", color = "#CCCCCC") +
   geom_sf(data = neighbors_sf, linewidth = 0.6) +
-  geom_sf(data=My_centroids,aes(color = NB_order,shape=NB_order),size=5) +
+  geom_sf(data=My_centroids,aes(color = NB_order,shape=NB_order,size=NB_order)) +
   scale_color_manual(values = c("0" = "red",
                                 "1" = "orange",
                                 "2" = "black"))+
+  scale_shape_manual(values = c("0" = 15,
+                                "1" = 16,
+                                "2" = 17)) +
+  # viz http://www.sthda.com/english/wiki/ggplot2-point-shapes
+  scale_size_manual(values = c("0" = 8,
+                               "1" = 6,
+                               "2" = 4)) +
   coord_sf(ylim = c(35, 58))+
   theme_minimal() +
   ylab("") +
