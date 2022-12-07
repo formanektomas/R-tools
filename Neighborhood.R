@@ -42,4 +42,16 @@ ggplot() +
   theme_minimal() +
   ylab("Latitude") +
   xlab("Longitude")
-
+#
+ggplot() + 
+  geom_sf(data=map2, fill = '#CCCCCC', color = 'darkgrey') +
+  geom_sf(data=my_states, fill="#999999", color = "#CCCCCC") +
+  geom_sf(data = neighbors_sf, linewidth = 0.6) +
+  geom_sf(data=My_centroids,aes(color = NB_order,shape=NB_order),size=5) +
+  scale_color_manual(values = c("0" = "red",
+                                "1" = "orange",
+                                "2" = "black"))+
+  coord_sf(ylim = c(35, 58))+
+  theme_minimal() +
+  ylab("") +
+  xlab("")
