@@ -5,7 +5,7 @@ library(eurostat)
 library(giscoR)
 library(sf)
 rm(list = ls())
-# Get the spatial data for NUTS regions 
+# Get the spatial data 
 options(readr.default_locale=readr::locale(tz="Europe/Berlin"))
 map1 <- giscoR::gisco_get_countries()
 map2 <- st_crop(map1, xmin = -10, ymin = 35.5, xmax = 29.5, ymax = 61.5)
