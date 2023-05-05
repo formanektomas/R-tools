@@ -1,0 +1,69 @@
+library(sandwich)
+library(lmtest)
+library(bruceR)
+#
+# original function
+?granger_test
+#
+# Prepare HAC robust version of the test : start
+granger_test_HAC <- function (formula, data, lags = 1:5, test.reverse = TRUE, file = NULL, ...) 
+{
+  installed("lmtest")
+  res = data.frame(Lag = lags, D1 = "", D2 = "", D12 = "")
+  names(res)[2:4] = c("Hypothesized Direction", "Reverse Direction", 
+                      "Hypothesized (vs. Reverse)")
+  if (test.reverse) {
+    formula.rev = as.formula(paste(formula[3], formula[1], 
+                                   formula[2]))
+    formulas = list(formula, formula.rev)
+  }
+  else {
+    formulas = list(formula)
+  }
+  Print("\n  \n\n  <<cyan Granger Causality Test (Bivariate)>>\n\n  Hypothesized direction:\n  <<blue {formula[2]} ~ {formula[2]}[1:Lags] + <<green {formula[3]}[1:Lags]>>>>\n  ")
+  for (f in formulas) {
+    rev = FALSE
+    if (test.reverse & f != formulas[[1]]) {
+      rev = TRUE
+      Print("\n      \n\n      Reverse direction:\n      <<blue {formula[3]} ~ {formula[3]}[1:Lags] + <<green {formula[2]}[1:Lags]>>>>\n      ")
+    }
+    for (lag in lags) {
+      gt = lmtest::grangertest(formula = f, data = data, 
+                               order = lag, na.action = na.omit, ...)
+      Fval = gt[2, "F"]
+      df1 = -gt[2, "Df"]
+      df2 = gt[1, "Res.Df"]
+      sig = str_trim(sig.trans(p.f(Fval, df1, df2)))
+      result = bruceR::p(f = Fval, df1 = df1, df2 = df2)
+      result.simple = formatF(Fval, 2) %^% ifelse(sig == 
+                                                    "", "", "<sup>" %^% sig %^% "</sup>")
+      Print("Lags = {lag}:\t{result}")
+      res[which(res$Lag == lag), ifelse(rev, 3, 2)] = p.plain(f = Fval, 
+                                                              df1 = df1, df2 = df2)
+      res[which(res$Lag == lag), 4] = ifelse(rev, res[[which(res$Lag == 
+                                                               lag), 4]] %^% " (vs. " %^% result.simple %^% 
+                                               ")", result.simple)
+    }
+  }
+  cat("\n")
+  if (!is.null(file)) {
+    RES = res
+    RES[[2]] = str_replace(str_replace(RES[[2]], "p", "<i>p</i>"), 
+                           "F", "<i>F</i>")
+    RES[[3]] = str_replace(str_replace(RES[[3]], "p", "<i>p</i>"), 
+                           "F", "<i>F</i>")
+    if (test.reverse == FALSE) 
+      RES = RES[1:2]
+    print_table(RES, row.names = FALSE, digits = 0, file.align.head = "left", 
+                file.align.text = "left", title = "<b>Table. Granger Causality Test (Bivariate).</b>", 
+                note = "<i>Note</i>. * <i>p</i> < .05. ** <i>p</i> < .01. *** <i>p</i> < .001.", 
+                file = file)
+  }
+}
+#
+environment(granger_test_HAC) <- asNamespace('bruceR')
+#
+# Prepare HAC robust version of the test : end
+#
+granger_test(chicken ~ egg, data=lmtest::ChickEgg)
+granger_test_HAC(chicken ~ egg, data=lmtest::ChickEgg, vcov=vcovHAC) # HAC
