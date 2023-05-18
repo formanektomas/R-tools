@@ -1,0 +1,192 @@
+---
+title: "Hastie_EM_algorithm_8_1"
+output: html_document
+author: Tomas Formanek
+---
+
+Follows *Hastie et al., The Elements of Statistical Learning 2nd ed. 7th corrected printing, 2013*
+
+# EM Algorithm for Two-component Gaussian Mixture
+
+* code is not very polished
+* mu_1 , mu_2 and var_1 and var_2 set to values leading to *mostly* visually obvious bi-modal distributions
+
+---
+
+
+1. Generate and plot data such that
+
+$$
+y_1 \sim N(\mu_1,\sigma_1^2) \\
+y_2 \sim N(\mu_2,\sigma_2^2) \\
+y = (1-\Delta)\cdot y_1 + \Delta \cdot y_2
+$$
+
+```{r, include=F}
+library(ggplot2)
+```
+
+
+
+
+```{r}
+# Simulate the data
+NN <- 500 # sample size
+# y_1
+mu_1 <- runif(1,0,3)
+sig_1 <- runif(1,0.7,2)
+y_1 <- rnorm(NN, mean = mu_1, sd=sqrt(sig_1)) # note that R uses sd to generate N dist.
+# y_2
+mu_2 <- runif(1,5,10)
+sig_2 <- runif(1,1,2.5)
+y_2 <- rnorm(NN, mean = mu_2, sd=sqrt(sig_2))
+# y
+prob_prior <- runif(1,0.2,0.8)
+pr <- rbinom(n=NN, size=1, prob=prob_prior)
+y <- (1-pr)*y_1 + pr*y_2
+# theta true (simulated)
+#                     1.      2.     3.       4.           5. 
+theta_true <- c(prob_prior, mu_1, mu_2, sqrt(sig_1), sqrt(sig_2))
+names(theta_true) <- c("prob","mu_1","mu_2","sig_1","sig_2")
+theta_true
+# plot
+yy <- as.data.frame(y)
+colnames(yy) <- "Y_observed"
+ggplot(yy, aes(x=Y_observed)) + 
+  geom_density()
+```
+
+--- 
+
+2. Initialize the EM Algorithm with starting estimates
+
+```{r}
+E_prob <- 0.5
+MU <- sample(y,2,replace = F)
+E_mu_1 <- MU[1]
+E_mu_2 <- MU[2]
+E_sig_1 <- sd(y)
+E_sig_2 <- sd(y)
+#                1.      2.     3.       4.       5. 
+(theta_v <- c(E_prob, E_mu_1, E_mu_2, E_sig_1, E_sig_2))
+#
+```
+
+---
+
+3. Expectations step - compute responsibilities
+
+```{r}
+# Essentially, a probability of y_i being from y2
+
+gamma_I <- function(PR=E_prob,MU1=E_mu_1,MU2=E_mu_2,SD1=E_sig_1,SD2=E_sig_2){
+  gamma_v <- rep(0,NN)
+  for (i in 1:NN){
+    A <- PR*dnorm(y[i], mean = MU2,sd=SD2,log=F)
+    B <- (1-PR)*dnorm(y[i], mean = MU1,sd=SD1,log=F) 
+    C <- PR*dnorm(y[i], mean = MU2,sd=SD2,log=F)
+    gamma_v[i] <- A/(B+C)
+  }
+  return(gamma_v)
+}
+gamma_v <- gamma_I()
+# cbind(pr,gamma_v)
+```
+
+---
+
+4. Update theta function
+```{r,eval=T}
+Update_theta <- function(GAMMA=gamma_v){
+    MU1 <- (sum((1-GAMMA)*y))/(sum(1-GAMMA))
+    MU2 <- (sum(GAMMA*y))/(sum(GAMMA))
+    VAR1 <- (sum((1-GAMMA)*((y-MU1)^2)))/(sum(1-GAMMA))
+    VAR2 <- (sum(GAMMA*((y-MU2)^2)))/(sum(GAMMA))
+    SD1 <- sqrt(VAR1)
+    SD2 <- sqrt(VAR2)
+    PROB <- sum(GAMMA)/NN
+    theta_est <- c(PROB,MU1,MU2,SD1,SD2)
+    return(theta_est)
+}
+```
+
+
+--- 
+
+5. Iterated from multiple starting points (MU1 and MU2)
+
+```{r,eval=T}
+#                1.      2.     3.       4.       5.     6.
+theta_DF <- data.frame(PROB=0, MU1=0, MU2=0, SD1=0, SD2=0, LL=-Inf)
+# LL is not an actual part of theta vector
+#
+# Generate SPn starting points for the iterations
+SPn <- 200 # number of starting points to use
+sp_MU1 <- c(min(y), quantile(y, probs=0.25), sample(y,SPn-2,replace=F))
+sp_MU2 <- c(max(y), quantile(y, probs=0.75), sample(y,SPn-2,replace=F))
+
+
+#
+# LL calculation (eq. 8.40)
+LLfunc <- function(THETA=theta_est,GAMMA=gamma_est,obs=NN){
+    LLi <- rep(0,obs)
+    PR <- THETA[1]
+    MU1 <- THETA[2]
+    MU2 <- THETA[3]
+    SD1 <- THETA[4]
+    SD2 <- THETA[5]
+    gamma_hat <- round(GAMMA)
+    for (k in 1:obs){
+       a <- (1-gamma_hat[k])*dnorm(y[k], mean = MU1,sd=SD1,log=T) 
+       b <- gamma_hat[k]*dnorm(y[k], mean = MU2,sd=SD2,log=T)
+       c <- (1-gamma_hat[k])*log(1-PR)
+       d <- gamma_hat[k]*log(PR)
+       LLi[k] <- a+b+c+d
+  }
+  return(sum(LLi))
+}
+
+#
+for (jj in 1:SPn){
+  # initialize entries for the optimization for loop
+  gamma_est <- gamma_I(PR=theta_v[1],MU1=sp_MU1[jj],MU2=sp_MU2[jj],
+                       SD1=theta_v[4],SD2=theta_v[5])
+  theta_est <- Update_theta(GAMMA = gamma_est)
+  # optimization for loop
+  for (i in 1:20){
+  gamma_est <- gamma_I(PR=theta_est[1],
+                       MU1=theta_est[2],
+                       MU2=theta_est[3],
+                       SD1=theta_est[4],
+                       SD2=theta_est[5])
+  theta_est <- Update_theta(GAMMA = gamma_est)
+  } # end optimization for loop
+  LL <- LLfunc()
+  # print(LL)
+  # print(gamma_est)
+  theta_DF[jj,] <- c(theta_est,LL)
+   
+}
+# theta_DF
+n <- which.max(theta_DF$LL)
+(theta_est <- theta_DF[n,])
+theta_true
+
+## Print posterior distribution
+# assignment of obs to y_1 and y_2 for the selected theta parameters
+gamma_est <- gamma_I(PR=theta_est[1,1],
+                       MU1=theta_est[1,2],
+                       MU2=theta_est[1,3],
+                       SD1=theta_est[1,4],
+                       SD2=theta_est[1,5])
+
+py_1 <- rnorm(NN, mean = theta_est[1,2], sd=theta_est[1,4]) # note that R uses sd to generate N dist.
+py_2 <- rnorm(NN, mean = theta_est[1,3], sd=theta_est[1,5]) 
+py <- as.data.frame((1-round(gamma_est))*py_1 + round(gamma_est)*py_2)
+colnames(py)<-"Posterior"
+
+ggplot(yy, aes(x=Y_observed)) + 
+  geom_density(colour="blue",linewidth=2)+
+  geom_density(data=py, aes(x=Posterior),colour="yellow")+
+  theme_dark()
+```
