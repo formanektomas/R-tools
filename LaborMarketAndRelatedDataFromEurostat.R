@@ -13,8 +13,9 @@ help(package=SmarterPoland)
 # write.csv(NUTS2, "NUTS2.csv")
 #
 #### GDP #### 
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=nama_10r_2gdp
+# https://ec.europa.eu/eurostat/databrowser/view/nama_10r_2gdp/default/table?lang=en
 # see web for metadata....
+# same approach for all datasets in this example (see the "nama_10r_2gdp" in the web-address)
 #
 GDP <- getEurostatRCV(kod = "nama_10r_2gdp")
 # select time
@@ -28,7 +29,6 @@ rm(GDP)
 #
 #
 #
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=nama_10r_2gdp
 #
 #
 #### Population  #### 
@@ -55,8 +55,6 @@ MainDF <- merge(MainDF, PopDF, by.x = c("geo", "time"), by.y = c("geo", "time"),
 rm(PopDF)
 MainDF$GDP_PC <- (MainDF$MIO_EUR/MainDF$TotPopNr)*1000000 # GDP Per capita - manually
 #
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=demo_r_pjangroup
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=demo_r_pjanind2
 #
 #
 #
@@ -113,8 +111,6 @@ ForDF <- cast(FOREIGN, geo+time ~ For+c_birth)
 rm(FOREIGN)
 MainDF <- merge(MainDF, ForDF, by.x = c("geo", "time"), by.y = c("geo", "time"), all.x = TRUE)
 rm(ForDF)
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=lfst_r_lfp2act
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=lfst_r_lfp2actrc
 #
 # Save MainDF
 write.csv(MainDF, "Main_s1.csv", row.names = F)
@@ -140,7 +136,6 @@ colnames(CapDF) <- c("geo","time","GCF_B_E","GCF_J","GCF_M_N","GCF_TOTAL")
 MainDF <- merge(MainDF, CapDF, by.x = c("geo", "time"), by.y = c("geo", "time"), all.x = TRUE)
 rm(CAP)
 rm(CapDF)
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=nama_10r_2gfcf
 #
 #
 #
@@ -163,7 +158,6 @@ colnames(WgDF) <- c("geo","time","Wg_B_E","Wg_J","Wg_M_N","Wg_TOTAL")
 MainDF <- merge(MainDF, WgDF, by.x = c("geo", "time"), by.y = c("geo", "time"), all.x = TRUE)
 rm(WAGE)
 rm(WgDF)
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=nama_10r_2coe 
 #
 #
 HRSEMP <- getEurostatRCV(kod = "nama_10r_2emhrw") # 000s hours worked per region
@@ -186,7 +180,6 @@ colnames(HrsDF) <- c("geo","time","Hrs_B_E","Hrs_J","Hrs_M_N","Hrs_TOTAL")
 MainDF <- merge(MainDF, HrsDF, by.x = c("geo", "time"), by.y = c("geo", "time"), all.x = TRUE)
 rm(HRSEMP)
 rm(HrsDF)
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=nama_10r_2emhrw 
 #
 # Labor Force Productivity 
 MainDF$LFP = (MainDF$MIO_EUR/MainDF$Hrs_TOTAL)*1000
@@ -195,9 +188,7 @@ write.csv(MainDF, "Main_s2.csv", row.names = F)
 #
 #
 # TECHEMP <- getEurostatRCV(kod = "htec_emp_reg2") # employment in tech-intensive , NACE
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=htec_emp_reg2
 # EMPL <- getEurostatRCV(kod = "lfst_r_lfe2emp") # Employment by age/sex, Fem. work part. rates
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=lfst_r_lfe2emp
 #
 EMN2 <- getEurostatRCV(kod = "lfst_r_lfe2en2") # Employment by age/NACE
 str(EMN2)
@@ -223,7 +214,6 @@ rm(Emn2DF)
 MainDF$Rel_Emp_B_E = (MainDF$Emp_B_E/MainDF$Emp_TOTAL)
 MainDF$Rel_Emp_J   = (MainDF$Emp_J/MainDF$Emp_TOTAL)
 MainDF$Rel_Emp_M_N = (MainDF$Emp_M_N/MainDF$Emp_TOTAL)
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=lfst_r_lfe2en2
 #
 #
 UNEM <-  getEurostatRCV(kod = "lfst_r_lfu3rt") # Unemployment rates
@@ -246,7 +236,6 @@ UnDF <- cast(UNEM, geo+time ~ unit)
 MainDF <- merge(MainDF, UnDF, by.x = c("geo", "time"), by.y = c("geo", "time"), all.x = TRUE)
 rm(UNEM)
 rm(UnDF)
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=lfst_r_lfu3rt
 #
 write.csv(MainDF, "Main_s3.csv", row.names = F)
 # MainDF <- read.csv("usableDF.csv")
@@ -271,11 +260,9 @@ summary(RDDF)
 MainDF <- merge(MainDF, RDDF, by.x = c("geo", "time"), by.y = c("geo", "time"), all.x = TRUE)
 rm(RDDF)
 rm(RDEX)
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=rd_e_gerdreg
 #
 #
 # RDEM <- getEurostatRCV(kod = "rd_p_persreg") # R&D Personnel by gen sector, up to 2015
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=rd_p_persreg
 #
 write.csv(MainDF, "Main_s4.csv", row.names = F)
 #
@@ -296,11 +283,9 @@ summary(TrDF)
 MainDF <- merge(MainDF, TrDF, by.x = c("geo", "time"), by.y = c("geo", "time"), all.x = TRUE)
 rm(TNET)
 rm(TrDF)
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=tran_r_net
 #
 #
 # RAIL <- getEurostatRCV(kod = "tran_r_rago") # Railway transp. volumes... useless
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=tran_r_rago
 #
 #
 #
@@ -319,7 +304,6 @@ summary(ACDF)
 MainDF <- merge(MainDF, ACDF, by.x = c("geo", "time"), by.y = c("geo", "time"), all.x = TRUE)
 rm(ACDAY)
 rm(ACDF)
-# http://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=nrg_chddr2_a
 #
 #
 #
