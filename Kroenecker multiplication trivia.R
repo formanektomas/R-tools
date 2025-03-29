@@ -15,3 +15,8 @@ J4a <- matrix(1:16, nrow=4)
 J4a # 1 to 16 elements filled column-wise
 kronecker(J4a,I3)
 kronecker(I3,J4a)
+#
+v1 <- 1:3
+#
+kronecker(iota4,v1)
+kronecker(v1,iota4)
