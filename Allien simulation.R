@@ -5,8 +5,8 @@
 
 
 # Set the number of repetitions and individuals
-repetitions <- 500000
-individuals <- 19
+repetitions <- 10000000
+individuals <- 20
 
 # Function to simulate the slicing process
 simulate_slicing <- function(individuals) {
@@ -31,3 +31,23 @@ largest_slice_first <- sum(apply(results, 2, function(x) which.max(x) == 1)) / r
 # Print the result
 cat("Probability that the first alien got the largest slice:", largest_slice_first, "\n")
 #
+
+x <- t(results)
+x <- as.data.frame(x)
+x$row_sum <- rowSums(x[, sapply(x, is.numeric)])
+summary(x)
+
+
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+
+# Reshape to long format
+x_long <- pivot_longer(x[,1:3], cols = everything(), names_to = "Variable", values_to = "Value")
+
+# Plot density
+ggplot(x_long, aes(x = Value, fill = Variable)) +
+  geom_density(alpha = 0.5, bw = 0.001) +
+  labs(x = "Value", y = "Density") +
+  theme_minimal()
+
