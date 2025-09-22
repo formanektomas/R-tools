@@ -19,4 +19,7 @@ kronecker(I3,J4a)
 v1 <- 1:3
 #
 kronecker(iota4,v1)
+kronecker(iota4,I3) %*% v1
+#
 kronecker(v1,iota4)
+kronecker(I3,iota4) %*% v1
